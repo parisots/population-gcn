@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Sarah Parisot <s.parisot@imperial.ac.uk>
+# Copyright (C) 2017 Sarah Parisot <s.parisot@imperial.ac.uk>, , Sofia Ira Ktena <ira.ktena@imperial.ac.uk>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
