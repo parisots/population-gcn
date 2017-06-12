@@ -59,8 +59,8 @@ def fetch_filenames(subject_IDs, file_type):
     for i in range(len(subject_IDs)):
         os.chdir(data_folder)  # os.path.join(data_folder, subject_IDs[i]))
         try:
-            filenames.append(glob.glob('*' + filemapping[file_type])[0])
-        except ValueError:
+            filenames.append(glob.glob('*' + subject_IDs[i] + filemapping[file_type])[0])
+        except IndexError:
             # Return N/A if subject ID is not found
             filenames.append('N/A')
 
@@ -77,10 +77,11 @@ def get_timeseries(subject_list, atlas_name):
         time_series  : list of timeseries arrays, each of shape (timepoints x regions)
     """
 
-    filenames = fetch_filenames(subject_list, 'rois_' + atlas_name)
-
     timeseries = []
-    for fl in filenames:
+    for i in range(len(subject_list)):
+        subject_folder = os.path.join(data_folder, subject_list[i])
+        ro_file = [f for f in os.listdir(subject_folder) if f.endswith('_rois_' + atlas_name + '.1D')]
+        fl = os.path.join(subject_folder, ro_file[0])
         print("Reading timeseries file %s" %fl)
         timeseries.append(np.loadtxt(fl, skiprows=0))
 

@@ -33,6 +33,7 @@ files = ['rois_ho']
 filemapping = {'func_preproc': 'func_preproc.nii.gz',
                'rois_ho': 'rois_ho.1D'}
 
+if not os.path.exists(data_folder): os.makedirs(data_folder)
 shutil.copyfile('./subject_IDs.txt', os.path.join(data_folder, 'subject_IDs.txt'))
 
 # Download database files
