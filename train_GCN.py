@@ -92,12 +92,11 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
         'labels': tf.placeholder(tf.float32, shape=(None, y_train.shape[1])),
         'labels_mask': tf.placeholder(tf.int32),
         'dropout': tf.placeholder_with_default(0., shape=()),
-        'depth': tf.placeholder_with_default(3, shape=()),
         'num_features_nonzero': tf.placeholder(tf.int32)  # helper variable for sparse dropout
     }
     
     # Create model
-    model = model_func(placeholders, input_dim=features[2][1], logging=True)
+    model = model_func(placeholders, input_dim=features[2][1], depth=FLAGS.depth, logging=True)
     
     # Initialize session
     sess = tf.Session()
@@ -128,8 +127,7 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
         t = time.time()
         # Construct feed dictionary
         feed_dict = construct_feed_dict(features, support, y_train, train_mask, placeholders)
-        feed_dict.update({placeholders['dropout']: FLAGS.dropout, placeholders['depth']: FLAGS.depth,
-                          placeholders['phase_train']: True})
+        feed_dict.update({placeholders['dropout']: FLAGS.dropout, placeholders['phase_train']: True})
     
         # Training step
         outs = sess.run([model.opt_op, model.loss, model.accuracy, model.predict()], feed_dict=feed_dict)
