@@ -10,6 +10,7 @@ arXiv preprint arXiv:1703.03020.
 
 We provide an implementation applied to the [ABIDE dataset](preprocessed-connectomes-project.org/abide) 
 for diagnosis of Autism Spectrum Disorder.
+We also provide the list of scans from the [ADNI dataset](adni.loni.usc.edu/) used in our experiments. Each element of the list is in the format {SUBJECT_ID}_{ACQUISITION_MONTH}
 
 #### INSTALLATION
 
