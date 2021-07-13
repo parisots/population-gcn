@@ -218,7 +218,7 @@ def main():
 
     if args.save == 1:
         result_name = 'ABIDE_classification.mat'
-        sio.savemat('/vol/medic02/users/sparisot/python/graphCNN/results/' + result_name + '.mat',
+        sio.savemat('/users/tomdavies/Documents/Southampton/code/logml/population-gcn/results/' + result_name,
                     {'lin': scores_lin, 'lin_auc': scores_auc_lin,
                      'acc': scores_acc, 'auc': scores_auc, 'folds': fold_size})
 
