@@ -16,7 +16,6 @@
 
 import time
 import argparse
-import os
 
 import numpy as np
 from scipy import sparse
@@ -26,6 +25,7 @@ from scipy.spatial import distance
 from sklearn.linear_model import RidgeClassifier
 import sklearn.metrics
 import scipy.io as sio
+import os
 
 import ABIDEParser as Reader
 import train_GCN as Train
