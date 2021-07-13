@@ -30,7 +30,8 @@ from nilearn import connectome
 pipeline = 'cpac'
 
 # Input data variables
-root_folder = '/users/tomdavies/Documents/Southampton/code/logml/population-gcn/data/'
+# root_folder = '/users/tomdavies/Documents/Southampton/code/logml/population-gcn/data/'
+root_folder = root_path + 'logml/data/'
 data_folder = os.path.join(root_folder, 'ABIDE_pcp/cpac/filt_noglobal')
 phenotype = os.path.join(root_folder, 'ABIDE_pcp/Phenotypic_V1_0b_preprocessed1.csv')
 

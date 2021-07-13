@@ -218,7 +218,8 @@ def main():
 
     if args.save == 1:
         result_name = 'ABIDE_classification.mat'
-        sio.savemat('/users/tomdavies/Documents/Southampton/code/logml/population-gcn/results/' + result_name,
+        # sio.savemat('/users/tomdavies/Documents/Southampton/code/logml/population-gcn/results/' + result_name,
+        sio.savemat(root_path + 'logml/results/' + result_name,
                     {'lin': scores_lin, 'lin_auc': scores_auc_lin,
                      'acc': scores_acc, 'auc': scores_auc, 'folds': fold_size})
 
