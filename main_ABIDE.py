@@ -216,10 +216,14 @@ def main():
         print('overall accuracy %f' + str(np.sum(scores_acc) * 1. / fold_size))
         print('overall AUC %f' + str(np.mean(scores_auc)))
 
+
     if args.save == 1:
+        results_folder = '/content/drive/My Drive/LOGML21/logml/results/'
+        if not os.path.exists(results_folder):
+          os.mkdir(results_folder)
         result_name = 'ABIDE_classification.mat'
         # sio.savemat('/users/tomdavies/Documents/Southampton/code/logml/population-gcn/results/' + result_name,
-        sio.savemat(root_path + 'logml/results/' + result_name,
+        sio.savemat(results_folder + result_name,
                     {'lin': scores_lin, 'lin_auc': scores_auc_lin,
                      'acc': scores_acc, 'auc': scores_auc, 'folds': fold_size})
 
