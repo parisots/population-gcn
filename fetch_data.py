@@ -41,7 +41,10 @@ if not os.path.exists(data_folder):
   os.makedirs(data_folder)
   print('new folder made')
 # shutil.copyfile('./subject_IDs.txt', os.path.join(data_folder, 'subject_IDs.txt'))
-shutil.copyfile('population-gcn/subject_IDs.txt', os.path.join(data_folder, 'subject_IDs.txt'))
+# shutil.copyfile('population-gcn/subject_IDs.txt', os.path.join(data_folder, 'subject_IDs.txt'))
+
+subject_id_path = '/content/drive/My Drive/LOGML21/population-gcn/subject_IDs.txt'
+shutil.copyfile(subject_id_path, os.path.join(data_folder, 'subject_IDs.txt'))
 
 # Download database files
 abide = datasets.fetch_abide_pcp(data_dir=root_folder, n_subjects=num_subjects, pipeline=pipeline,
