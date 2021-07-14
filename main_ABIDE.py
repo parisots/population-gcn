@@ -84,7 +84,7 @@ def train_fold(train_ind, test_ind, val_ind, graph_feat, features, y, y_data, pa
     print("Linear Accuracy: " + str(lin_acc))
 
     # Classification with GCNs
-    test_acc, test_auc = Train.run_training(final_graph, sparse.coo_matrix(x_data).tolil(), y_data, train_ind, val_ind,
+    pred, test_acc, test_auc = Train.run_training(final_graph, sparse.coo_matrix(x_data).tolil(), y_data, train_ind, val_ind,
                                             test_ind, params)
 
     print(test_acc)
@@ -93,7 +93,7 @@ def train_fold(train_ind, test_ind, val_ind, graph_feat, features, y, y_data, pa
     test_acc = int(round(test_acc * len(test_ind)))
     lin_acc = int(round(lin_acc * len(test_ind)))
 
-    return test_acc, test_auc, lin_acc, lin_auc, fold_size
+    return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size
 
 
 def main():

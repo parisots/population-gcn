@@ -115,7 +115,7 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
         lab = label
         lab = lab[np.squeeze(np.argwhere(mask == 1)), :]
         auc = sklearn.metrics.roc_auc_score(np.squeeze(lab), np.squeeze(pred))
-        return outs_val[0], outs_val[1], auc,  (time.time() - t_test)
+        return outs_val[2], outs_val[0], outs_val[1], auc,  (time.time() - t_test)
     
     # Init variables
     sess.run(tf.global_variables_initializer())
@@ -139,7 +139,7 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
         train_auc = sklearn.metrics.roc_auc_score(np.squeeze(labs), np.squeeze(pred))
     
         # Validation
-        cost, acc, auc, duration = evaluate(features, support, y_val, val_mask, placeholders)
+        _, cost, acc, auc, duration = evaluate(features, support, y_val, val_mask, placeholders)
         cost_val.append(cost)
     
         # Print results
@@ -155,9 +155,10 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
     
     # Testing
     sess.run(tf.local_variables_initializer())
-    test_cost, test_acc, test_auc, test_duration = evaluate(features, support, y_test, test_mask, placeholders)
+    pred, test_cost, test_acc, test_auc, test_duration = evaluate(features, support, y_test, test_mask, placeholders)
+    
     print("Test set results:", "cost=", "{:.5f}".format(test_cost),
           "accuracy=", "{:.5f}".format(test_acc),
           "auc=", "{:.5f}".format(test_auc))
     
-    return test_acc, test_auc
+    return pred, test_acc, test_auc
