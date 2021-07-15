@@ -96,6 +96,41 @@ def train_fold(train_ind, test_ind, val_ind, graph_feat, features, y, y_data, pa
     return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size
 
 
+# For compatibility with Pool.map
+def train_fold_thread(
+    indices_tuple, *, graph_feat, features, y, y_data, params, subject_IDs
+):
+    """
+        indices tuple   : tuple of indices of the training, test, and validation samples
+        graph_feat      : population graph computed from phenotypic measures num_subjects x num_subjects
+        features        : feature vectors num_subjects x num_features
+        y               : ground truth labels (num_subjects x 1)
+        y_data          : ground truth labels - different representation (num_subjects x 2)
+        params          : dictionary of GCNs parameters
+        subject_IDs     : list of subject IDs
+    returns:
+        test_acc    : average accuracy over the test samples using GCNs
+        test_auc    : average area under curve over the test samples using GCNs
+        lin_acc     : average accuracy over the test samples using the linear classifier
+        lin_auc     : average area under curve over the test samples using the linear classifier
+        fold_size   : number of test samples
+        test_ind    : indices of the test samples (for keeping track)
+    """
+    train_ind, test_ind, val_ind = indices_tuple
+    pred, test_acc, test_auc, lin_acc, lin_auc, fold_size = train_fold(
+        train_ind,
+        test_ind,
+        val_ind,
+        graph_feat,
+        features,
+        y,
+        y_data,
+        params,
+        subject_IDs,
+    )
+    return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, test_ind
+    
+
 def main():
     parser = argparse.ArgumentParser(description='Graph CNNs for population graphs: '
                                                  'classification of the ABIDE dataset')
