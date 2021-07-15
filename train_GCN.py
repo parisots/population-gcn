@@ -45,7 +45,7 @@ def get_train_test_masks(labels, idx_train, idx_val, idx_test):
 
 
 def run_training(adj, features, labels, idx_train, idx_val, idx_test,
-                 params):
+                 params, sex_data=None, stratify=False):
 
     # Set random seed
     random.seed(params['seed'])
@@ -102,6 +102,15 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
     # Initialize session
     sess = tf.Session()
 
+    def get_stratified_data(y_train, train_idx, sex_labels):
+        female_n = sex_labels[train_idx, 1].sum()
+        female_idx = np.intersect1d(train_idx, np.argwhere(sex_labels[:,1]==1))
+        male_idx = np.intersect1d(train_idx, np.argwhere(sex_labels[:,0]==1))
+        male_idx_stratified = np.random.choice(male_idx, int(female_n))
+
+        idx_stratified = np.concatenate((female_idx, male_idx_stratified))
+        return sample_mask(idx_stratified, labels.shape[0])
+
     # Define model evaluation function
     def evaluate(feats, graph, label, mask, placeholder):
         t_test = time.time()
@@ -127,7 +136,11 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
     
         t = time.time()
         # Construct feed dictionary
-        feed_dict = construct_feed_dict(features, support, y_train, train_mask, placeholders)
+        if stratify:
+            train_mask_str = get_stratified_data(y_train, idx_train, sex_data)
+            feed_dict = construct_feed_dict(features, support, y_train, train_mask_str, placeholders)
+        else:
+            feed_dict = construct_feed_dict(features, support, y_train, train_mask, placeholders)
         feed_dict.update({placeholders['dropout']: FLAGS.dropout, placeholders['phase_train']: True})
     
         # Training step
