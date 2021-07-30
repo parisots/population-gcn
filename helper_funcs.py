@@ -165,7 +165,7 @@ def get_auc_acc(y, pred, test, sex_data, population='all'):
   return scores_dict
 
 
-def process_scores(scores):
+def process_scores(scores, y, sex_data):
   
   metrics = ["auc", "acc", "acc_asd", "acc_neurotypical", "n", "n_asd", "n_neurotypical"]
   score_keys = [
