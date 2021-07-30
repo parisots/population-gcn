@@ -28,7 +28,6 @@ num_subjects = 871  # Number of subjects
 # Input data variables
 # root_folder = '/users/tomdavies/Documents/Southampton/code/logml/population-gcn/data/'
 root_folder = '/content/drive/My Drive/LOGML21/logml/data/'
-# root_folder = root_path +  'logml/data'
 data_folder = os.path.join(root_folder, 'ABIDE_pcp/cpac/filt_noglobal')
 
 # Files to fetch

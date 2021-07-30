@@ -51,7 +51,7 @@ def get_acc_safe(true, predicted):
   return acc
 
 
-  def get_auc_acc(y, pred, test, sex_data, population='all'):
+def get_auc_acc(y, pred, test, sex_data, population='all'):
   """
   population = 'all' / 'male' / 'female'
   """
