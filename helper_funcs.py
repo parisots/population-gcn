@@ -1,6 +1,7 @@
 
 import sklearn
 import numpy as np
+import pandas as pd
 import tensorflow.compat.v1 as tf
 from functools import partial
 from multiprocessing import Pool
@@ -26,18 +27,19 @@ def compute_error_and_bias(y_true, y_pred, a):
 
     error = np.mean(np.not_equal(y_true,y_pred))
     # a=0 is female, a=1 is male
-    alpha_1 = np.sum(np.logical_and(y_pred == 1,np.logical_and(y_true == 1, a == 0))) / float(np.sum(
+    true_positive_female = np.sum(np.logical_and(y_pred == 1,np.logical_and(y_true == 1, a == 0))) / float(np.sum(
         np.logical_and(y_true == 1, a == 0)))
-    beta_1 = np.sum(np.logical_and(y_pred == 1, np.logical_and(y_true == 1, a == 1))) / float(np.sum(
+    true_positive_male = np.sum(np.logical_and(y_pred == 1, np.logical_and(y_true == 1, a == 1))) / float(np.sum(
         np.logical_and(y_true == 1, a == 1)))
-    alpha_2 = np.sum(np.logical_and(y_pred == 1, np.logical_and(y_true == 0, a == 0))) / float(np.sum(
+    false_positive_female = np.sum(np.logical_and(y_pred == 1, np.logical_and(y_true == 0, a == 0))) / float(np.sum(
         np.logical_and(y_true == 0, a == 0)))
-    beta_2 = np.sum(np.logical_and(y_pred == 1, np.logical_and(y_true == 0, a == 1))) / float(np.sum(
+    false_positive_male = np.sum(np.logical_and(y_pred == 1, np.logical_and(y_true == 0, a == 1))) / float(np.sum(
         np.logical_and(y_true == 0, a == 1)))
-    biasY1 = np.abs(alpha_1-beta_1)
-    biasYm1 = np.abs(alpha_2-beta_2)
 
-    return error, biasY1, biasYm1
+    true_positive_bias = np.abs(true_positive_female - true_positive_male)
+    false_positive_bias = np.abs(false_positive_female-false_positive_male)
+
+    return error, true_positive_bias, false_positive_bias
 
 
 def get_roc_auc_safe(true, predicted):
@@ -84,13 +86,16 @@ def get_auc_acc(y, pred, test, sex_data, population='all'):
     n_asd = sum(test_y == 1)[0]
     n_neurotypical = sum(test_y == 0)[0]
 
-    _, bias_1, bias_0 = compute_error_and_bias(test_y.reshape(-1).astype(int), 
-                                               pred_test_y_bin.astype(int), 
-                                               (test_sex_data[:,0]).astype(int))
-    scores_dict["bias_0"] = bias_0
-    scores_dict["bias_1"] = bias_1
-    print('Bias for true Y=0', bias_0)
-    print('Bias for true Y=1', bias_1)
+    # bias_1 = true_positive_bias
+    # bias_0 = false_positive_bias
+
+    _, true_positive_bias, false_positive_bias = compute_error_and_bias(test_y.reshape(-1).astype(int), 
+                                                    pred_test_y_bin.astype(int), 
+                                                    (test_sex_data[:,0]).astype(int))
+    scores_dict["false_positive_bias"] = false_positive_bias
+    scores_dict["true_positive_bias"] = true_positive_bias
+    print('false_positive_bias', false_positive_bias)
+    print('true_positive_bias', true_positive_bias)
 
   if population == 'male':
     auc_test = get_roc_auc_safe(
@@ -176,8 +181,8 @@ def process_scores(scores):
     overall_scores = get_auc_acc(y, pred, test_ind, sex_data)
     for metric in metrics:
       scores_dict[(metric, "overall")].append(overall_scores[metric])
-    scores_dict[("bias", "FP")].append(overall_scores["bias_0"])
-    scores_dict[("bias", "TP")].append(overall_scores["bias_1"])
+    scores_dict[("bias", "FP")].append(overall_scores["false_positive_bias"])
+    scores_dict[("bias", "TP")].append(overall_scores["true_positive_bias"])
     
     print('\nMale')
     male_scores = get_auc_acc(y, pred, test_ind, sex_data, 'male')
