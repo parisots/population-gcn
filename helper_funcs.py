@@ -170,7 +170,7 @@ def process_scores(scores, y, sex_data):
   metrics = ["auc", "acc", "acc_asd", "acc_neurotypical", "n", "n_asd", "n_neurotypical"]
   score_keys = [
     (metric, sex) for metric in metrics for sex in ["male", "female", "overall"]
-  ] + [("bias", "neurotypical"), ("bias", "asd")]
+  ] + [("bias", "FP"), ("bias", "TP")]
 
   scores_dict = {key: [] for key in score_keys}
 
