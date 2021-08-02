@@ -113,7 +113,7 @@ def get_auc_acc(y, pred, test, sex_data, population='all'):
             test_y.reshape(-1).astype(int),
             pred_test_y_bin.astype(int),
             (test_sex_data[:, 0]).astype(int),
-            absolute_value=False)
+            absolute_value=True)
         scores_dict["false_positive_bias"] = false_positive_bias
         scores_dict["true_positive_bias"] = true_positive_bias
         print('false_positive_bias', false_positive_bias)
