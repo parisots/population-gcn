@@ -78,7 +78,7 @@ def get_acc_safe(true, predicted):
     return acc
 
 
-def get_auc_acc(y, pred, test, sex_data, population='all'):
+def get_auc_acc(y, pred, test, sex_data, population='all', abs_bias=True):
     """
     population = 'all' / 'male' / 'female'
     """
@@ -113,7 +113,7 @@ def get_auc_acc(y, pred, test, sex_data, population='all'):
             test_y.reshape(-1).astype(int),
             pred_test_y_bin.astype(int),
             (test_sex_data[:, 0]).astype(int),
-            absolute_value=True)
+            absolute_value=abs_bias)
         scores_dict["false_positive_bias"] = false_positive_bias
         scores_dict["true_positive_bias"] = true_positive_bias
         print('false_positive_bias', false_positive_bias)
@@ -194,7 +194,7 @@ def get_auc_acc(y, pred, test, sex_data, population='all'):
     return scores_dict
 
 
-def process_scores(scores, y, sex_data):
+def process_scores(scores, y, sex_data, abs_bias=True):
     metrics = ["auc", "acc", "acc_asd", "acc_neurotypical", "n", "n_asd",
                "n_neurotypical"]
     score_keys = [
@@ -208,7 +208,7 @@ def process_scores(scores, y, sex_data):
         pred = score_tuple[0]
         test_ind = score_tuple[-1]
         print('\nOverall')
-        overall_scores = get_auc_acc(y, pred, test_ind, sex_data)
+        overall_scores = get_auc_acc(y, pred, test_ind, sex_data, abs_bias=abs_bias)
         for metric in metrics:
             scores_dict[(metric, "overall")].append(overall_scores[metric])
         scores_dict[("bias", "FP")].append(
@@ -217,12 +217,12 @@ def process_scores(scores, y, sex_data):
             overall_scores["true_positive_bias"])
 
         print('\nMale')
-        male_scores = get_auc_acc(y, pred, test_ind, sex_data, 'male')
+        male_scores = get_auc_acc(y, pred, test_ind, sex_data, 'male', abs_bias=abs_bias)
         for metric in metrics:
             scores_dict[(metric, "male")].append(male_scores[metric])
 
         print('\nFemale')
-        female_scores = get_auc_acc(y, pred, test_ind, sex_data, 'female')
+        female_scores = get_auc_acc(y, pred, test_ind, sex_data, 'female', abs_bias=abs_bias)
         for metric in metrics:
             scores_dict[(metric, "female")].append(female_scores[metric])
 
