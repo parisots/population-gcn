@@ -7,7 +7,7 @@ from multiprocessing import Pool
 from main_ABIDE import train_fold_thread
 
 
-def compute_error_and_bias(y_true, y_pred, a):
+def compute_error_and_bias(y_true, y_pred, a, absolute_value=True):
     # https://github.com/matthklein/equalized_odds_under_perturbation/blob
     # /master/equalized_odds.py
     # formula before Assumption 1 https://arxiv.org/pdf/1906.03284.pdf
@@ -52,8 +52,12 @@ def compute_error_and_bias(y_true, y_pred, a):
                               np.sum(
                                   np.logical_and(y_true == 0, a == 1)))
 
-    true_positive_bias = np.abs(true_positive_female - true_positive_male)
-    false_positive_bias = np.abs(false_positive_female - false_positive_male)
+    true_positive_bias = true_positive_female - true_positive_male
+    false_positive_bias = false_positive_female - false_positive_male
+
+    if absolute_value:
+        true_positive_bias = np.abs(true_positive_bias)
+        false_positive_bias = np.abs(false_positive_bias)
 
     return error, true_positive_bias, false_positive_bias
 
@@ -108,7 +112,8 @@ def get_auc_acc(y, pred, test, sex_data, population='all'):
         _, true_positive_bias, false_positive_bias = compute_error_and_bias(
             test_y.reshape(-1).astype(int),
             pred_test_y_bin.astype(int),
-            (test_sex_data[:, 0]).astype(int))
+            (test_sex_data[:, 0]).astype(int),
+            absolute_value=False)
         scores_dict["false_positive_bias"] = false_positive_bias
         scores_dict["true_positive_bias"] = true_positive_bias
         print('false_positive_bias', false_positive_bias)
