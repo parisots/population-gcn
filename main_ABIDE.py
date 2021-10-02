@@ -96,7 +96,7 @@ def train_fold(train_ind, test_ind, val_ind, graph_feat, features, y, y_data,
     print("Linear Accuracy: " + str(lin_acc))
 
     # Classification with GCNs
-    pred, test_acc, test_auc = Train.run_training(final_graph,
+    pred, test_acc, test_auc, pred_train = Train.run_training(final_graph,
                                                   sparse.coo_matrix(
                                                       x_data).tolil(), y_data,
                                                   train_ind, val_ind,
@@ -109,7 +109,7 @@ def train_fold(train_ind, test_ind, val_ind, graph_feat, features, y, y_data,
     test_acc = int(round(test_acc * len(test_ind)))
     lin_acc = int(round(lin_acc * len(test_ind)))
 
-    return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size
+    return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, pred_train
 
 
 # For compatibility with Pool.map
@@ -140,7 +140,7 @@ def train_fold_thread(
         test_ind    : indices of the test samples (for keeping track)
     """
     train_ind, test_ind, val_ind = indices_tuple
-    pred, test_acc, test_auc, lin_acc, lin_auc, fold_size = train_fold(
+    pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, pred_train = train_fold(
         train_ind,
         test_ind,
         val_ind,
@@ -154,7 +154,7 @@ def train_fold_thread(
         stratify,
         fold_index
     )
-    return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, test_ind
+    return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, test_ind, pred_train
 
 
 def main():

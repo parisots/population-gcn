@@ -38,7 +38,6 @@ from gcn.utils import *
 from gcn.models import MLP, Deep_GCN
 import sklearn.metrics
 
-
 def get_train_test_masks(labels, idx_train, idx_val, idx_test):
     train_mask = sample_mask(idx_train, labels.shape[0])
     val_mask = sample_mask(idx_val, labels.shape[0])
@@ -55,7 +54,8 @@ def get_train_test_masks(labels, idx_train, idx_val, idx_test):
 
 
 def run_training(adj, features, labels, idx_train, idx_val, idx_test,
-                 params, sex_data=None, stratify=False, fold_index=None):
+                 params, sex_data=None, stratify=False, fold_index=None,
+                 ):
     # Set random seed
     random.seed(params['seed'])
     np.random.seed(params['seed'])
@@ -173,6 +173,7 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
         else:
             feed_dict = construct_feed_dict(features, support, y_train,
                                             train_mask, placeholders)
+
         feed_dict.update({placeholders['dropout']: FLAGS.dropout,
                           placeholders['phase_train']: True})
 
@@ -180,12 +181,12 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
         outs = sess.run(
             [model.opt_op, model.loss, model.accuracy, model.predict()],
             feed_dict=feed_dict)
-        pred = outs[3]
-        pred = pred[np.squeeze(np.argwhere(train_mask == 1)), :]
+        pred_train = outs[3]
+        pred_train = pred_train[np.squeeze(np.argwhere(train_mask == 1)), :]
         labs = y_train
         labs = labs[np.squeeze(np.argwhere(train_mask == 1)), :]
         train_auc = sklearn.metrics.roc_auc_score(np.squeeze(labs),
-                                                  np.squeeze(pred))
+                                                  np.squeeze(pred_train))
 
         # Validation
         _, cost, acc, auc, duration = evaluate(features, support, y_val,
@@ -224,4 +225,4 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
           "accuracy=", "{:.5f}".format(test_acc),
           "auc=", "{:.5f}".format(test_auc))
 
-    return pred, test_acc, test_auc
+    return pred, test_acc, test_auc, pred_train
