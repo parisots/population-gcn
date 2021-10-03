@@ -206,7 +206,7 @@ def process_scores(scores, y, sex_data, abs_bias=True):
 
     for score_tuple in scores:
         pred = score_tuple[0]
-        test_ind = score_tuple[-1]
+        test_ind = score_tuple[6]
         print('\nOverall')
         overall_scores = get_auc_acc(y, pred, test_ind, sex_data, abs_bias=abs_bias)
         for metric in metrics:
