@@ -57,9 +57,16 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
                  params, sex_data=None, stratify=False, fold_index=None,
                  ):
     # Set random seed
-    random.seed(params['seed'])
-    np.random.seed(params['seed'])
-    tf.set_random_seed(params['seed'])
+    if fold_index != None: # HOLDOUT
+      seeds = np.arange(100,110) 
+      seed_fold = seeds[fold_index]
+      random.seed(seed_fold)
+      np.random.seed(seed_fold)
+      tf.set_random_seed(seed_fold)
+    else: 
+      random.seed(params['seed'])
+      np.random.seed(params['seed'])
+      tf.set_random_seed(params['seed'])
 
     # Settings
     flags = tf.app.flags
@@ -208,7 +215,7 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
             break
 
     if fold_index != None:  # Saving models' parameters
-        saver.save(sess, 'GCN_asd_males_' + str(fold_index),
+        saver.save(sess, 'GCN_holdout_' + str(fold_index),
                    global_step=params['epochs'])  ###
 
     print("Optimization Finished!")
