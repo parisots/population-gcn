@@ -22,12 +22,13 @@ def boxplots_acc(model, results_path=None):
   i = 1
   fig = plt.figure(figsize=(16, 4))
   fig.suptitle(str(model))
+  nfolds = data.shape[0]
   for measure in measures:
     # print(i)
     fig.add_subplot(1, 4, i)
-    temp = np.concatenate([[data[str(measure)]['female'], ['female']*10],
-                          [data[str(measure)]['male'], ['male']*10],
-                          [data[str(measure)]['overall'], ['overall']*10]], axis=1)
+    temp = np.concatenate([[data[str(measure)]['female'], ['female']*nfolds],
+                          [data[str(measure)]['male'], ['male']*nfolds],
+                          [data[str(measure)]['overall'], ['overall']*nfolds]], axis=1)
     data_plot = pd.DataFrame(data=temp.T, columns=['Score', 'Group'])
     data_plot['Score'] = data_plot['Score'].astype(float)
     ax = sns.boxplot(x="Group", y="Score", data=data_plot)
@@ -58,9 +59,10 @@ def boxplots_bias(models, results_path=None):
         data = pickle.load(f)
 
     # Graph config
+    nfolds = data.shape[0]
     fig.add_subplot(1, len(models), i)
-    temp = np.concatenate([[data[str(measure)]['neurotypical'], ['neurotypical']*10],
-                          [data[str(measure)]['asd'], ['asd']*10]], axis=1)
+    temp = np.concatenate([[data[str(measure)]['FP'], ['FP']*nfolds],
+                          [data[str(measure)]['TP'], ['TP']*nfolds]], axis=1)
     data_plot = pd.DataFrame(data=temp.T, columns=['Score', 'Group'])
     data_plot['Score'] = data_plot['Score'].astype(float)
     ax = sns.boxplot(x="Group", y="Score", data=data_plot)
