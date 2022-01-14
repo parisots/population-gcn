@@ -34,7 +34,7 @@ import train_GCN as Train
 
 # Prepares the training/test data for each cross validation fold and trains
 # the GCN
-def train_fold(train_ind, test_ind, val_ind, graph_feat, features, y, y_data,
+def train_fold(train_ind, val_ind, test_ind, graph_feat, features, y, y_data,
                params, subject_IDs,
                sex_data=None, stratify=False, fold_index=None
                ):
@@ -139,11 +139,11 @@ def train_fold_thread(
         fold_size   : number of test samples
         test_ind    : indices of the test samples (for keeping track)
     """
-    train_ind, test_ind, val_ind = indices_tuple
+    train_ind, val_ind, test_ind = indices_tuple
     pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, pred_train = train_fold(
         train_ind,
-        test_ind,
         val_ind,
+        test_ind,
         graph_feat,
         features,
         y,
