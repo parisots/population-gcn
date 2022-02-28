@@ -18,7 +18,7 @@ def compute_error_and_bias(y_true, y_pred, a, absolute_value=True):
       y_true ...  in {-1,1}^n1; true labels
       y_pred ... in {-1,1}^n1; predicted labels
       a ... in {0,1}^n1; protected attributes
-      
+
     OUTPUT:
       error ... error of the predictor
       biasY1 ... bias of the predictor for Y=1
@@ -208,7 +208,8 @@ def process_scores(scores, y, sex_data, abs_bias=True):
         pred = score_tuple[0]
         test_ind = score_tuple[6]
         print('\nOverall')
-        overall_scores = get_auc_acc(y, pred, test_ind, sex_data, abs_bias=abs_bias)
+        overall_scores = get_auc_acc(y, pred, test_ind, sex_data,
+                                     abs_bias=abs_bias)
         for metric in metrics:
             scores_dict[(metric, "overall")].append(overall_scores[metric])
         scores_dict[("bias", "FP")].append(
@@ -217,12 +218,14 @@ def process_scores(scores, y, sex_data, abs_bias=True):
             overall_scores["true_positive_bias"])
 
         print('\nMale')
-        male_scores = get_auc_acc(y, pred, test_ind, sex_data, 'male', abs_bias=abs_bias)
+        male_scores = get_auc_acc(y, pred, test_ind, sex_data, 'male',
+                                  abs_bias=abs_bias)
         for metric in metrics:
             scores_dict[(metric, "male")].append(male_scores[metric])
 
         print('\nFemale')
-        female_scores = get_auc_acc(y, pred, test_ind, sex_data, 'female', abs_bias=abs_bias)
+        female_scores = get_auc_acc(y, pred, test_ind, sex_data, 'female',
+                                    abs_bias=abs_bias)
         for metric in metrics:
             scores_dict[(metric, "female")].append(female_scores[metric])
 
@@ -235,7 +238,9 @@ def process_scores(scores, y, sex_data, abs_bias=True):
 
 def run_cross_validation(strat_indices, graph, features, y, y_data, params,
                          subject_IDs, skf, num_nodes, sex_data=None,
-                         stratify=False, save=False):
+                         stratify=False, save=False, baseline=False,
+                         transfer_learning=False, model_number=None,
+                         model_location=None):
     flags_dict = tf.flags.FLAGS._flags()
     keys_list = [keys for keys in flags_dict]
     for keys in keys_list:
@@ -257,6 +262,11 @@ def run_cross_validation(strat_indices, graph, features, y, y_data, params,
                         subject_IDs=subject_IDs,
                         sex_data=sex_data,
                         stratify=stratify,
+                        baseline=baseline,
+                        transfer_learning=transfer_learning,
+                        model_number=model_number,
+                        model_location=model_location
+
                     ),
                     zip(strat_indices, fold_indices)
                 )
@@ -276,8 +286,14 @@ def run_cross_validation(strat_indices, graph, features, y, y_data, params,
                         subject_IDs=subject_IDs,
                         sex_data=sex_data,
                         stratify=stratify,
+                        baseline=baseline,
+                        transfer_learning=transfer_learning,
+                        model_number=model_number,
+                        model_location=model_location
                     ),
-                    # [(train_ind, test_ind, test_ind) for train_ind, test_ind in reversed(list(skf.split(np.zeros(num_nodes), np.squeeze(y))))]
+                    # [(train_ind, test_ind, test_ind) for train_ind,
+                    # test_ind in reversed(list(skf.split(np.zeros(
+                    # num_nodes), np.squeeze(y))))]
                     strat_indices
                 )
             )

@@ -36,7 +36,8 @@ import train_GCN as Train
 # the GCN
 def train_fold(train_ind, val_ind, test_ind, graph_feat, features, y, y_data,
                params, subject_IDs,
-               sex_data=None, stratify=False, fold_index=None
+               sex_data=None, stratify=False, fold_index=None, baseline=False,
+               transfer_learning=False, model_number=None, model_location=None
                ):
     """
         train_ind       : indices of the training samples
@@ -95,19 +96,48 @@ def train_fold(train_ind, val_ind, test_ind, graph_feat, features, y, y_data,
 
     print("Linear Accuracy: " + str(lin_acc))
 
-    # Classification with GCNs
-    pred, test_acc, test_auc, pred_train = Train.run_training(final_graph,
-                                                  sparse.coo_matrix(
-                                                      x_data).tolil(), y_data,
-                                                  train_ind, val_ind,
-                                                  test_ind, params, sex_data,
-                                                  stratify, fold_index)
+    # For Baseline results
+    pred = clf.decision_function(x_data)
+    temp = np.zeros((2, len(pred)))
+    temp[1][pred > 0] = 1
+    temp[0][temp[1] != 1] = 0
+    pred = temp.T
 
-    print(test_acc)
+    pred_train = clf.decision_function(x_data[train_ind, :])
+    temp = np.zeros((2, len(pred_train)))
+    temp[1][pred_train > 0] = 1
+    temp[0][temp[1] != 1] = 0
+    pred_train = temp.T
 
-    # return number of correctly classified samples instead of percentage
+    test_acc = clf.score(x_data[test_ind, :], y[test_ind].ravel())
     test_acc = int(round(test_acc * len(test_ind)))
-    lin_acc = int(round(lin_acc * len(test_ind)))
+    test_auc = lin_auc
+
+    if baseline == False:
+        # Classification with GCNs
+        if transfer_learning == True:
+            print('test')
+            pred, test_acc, test_auc, pred_train = Train.run_training_transfer(
+                final_graph,
+                sparse.coo_matrix(
+                    x_data).tolil(), y_data,
+                train_ind, val_ind,
+                test_ind, params, sex_data,
+                stratify, fold_index, model_location)
+        else:
+            pred, test_acc, test_auc, pred_train = Train.run_training(
+                final_graph,
+                sparse.coo_matrix(
+                    x_data).tolil(), y_data,
+                train_ind, val_ind,
+                test_ind, params, sex_data,
+                stratify, fold_index, model_number)
+
+        print(test_acc)
+
+        # return number of correctly classified samples instead of percentage
+        test_acc = int(round(test_acc * len(test_ind)))
+        lin_acc = int(round(lin_acc * len(test_ind)))
 
     return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, pred_train
 
@@ -116,7 +146,8 @@ def train_fold(train_ind, val_ind, test_ind, graph_feat, features, y, y_data,
 def train_fold_thread(
         indices_tuple, fold_index=None, *, graph_feat, features, y, y_data,
         params, subject_IDs,
-        sex_data=None, stratify=False
+        sex_data=None, stratify=False, baseline=False, transfer_learning=False,
+        model_number=None, model_location=None
 ):
     """
         indices tuple   : tuple of indices of the training, test,
@@ -140,7 +171,8 @@ def train_fold_thread(
         test_ind    : indices of the test samples (for keeping track)
     """
     train_ind, val_ind, test_ind = indices_tuple
-    pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, pred_train = train_fold(
+    pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, pred_train = \
+        train_fold(
         train_ind,
         val_ind,
         test_ind,
@@ -152,9 +184,14 @@ def train_fold_thread(
         subject_IDs,
         sex_data,
         stratify,
-        fold_index
+        fold_index,
+        baseline,
+        transfer_learning,
+        model_number,
+        model_location
     )
-    return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, test_ind, pred_train
+    return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, test_ind, \
+           pred_train
 
 
 def main():
