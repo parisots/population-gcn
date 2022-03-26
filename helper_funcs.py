@@ -1,3 +1,4 @@
+from sys import set_asyncgen_hooks
 import sklearn
 import numpy as np
 import pandas as pd
@@ -119,6 +120,16 @@ def get_auc_acc(y, pred, test, sex_data, population='all', abs_bias=True):
         print('false_positive_bias', false_positive_bias)
         print('true_positive_bias', true_positive_bias)
 
+        y_pred = pred_test_y_bin.astype(int)
+        y_true = test_y.reshape(-1).astype(int)
+        TP = np.sum(np.logical_and(y_pred == 1, y_true == 1))
+        FN = np.sum(np.logical_and(y_pred == 0, y_true == 1))
+        sens = TP / (TP + FN)
+
+        TN = np.sum(np.logical_and(y_pred == 0, y_true == 0))
+        FP = np.sum(np.logical_and(y_pred == 1, y_true == 0))
+        spec = TN / (TN + FP)
+
     if population == 'male':
         auc_test = get_roc_auc_safe(
             test_y[test_sex_data[:, 0] == 1],
@@ -146,6 +157,17 @@ def get_auc_acc(y, pred, test, sex_data, population='all', abs_bias=True):
         n_asd = sum(test_y[test_sex_data[:, 0] == 1] == 1)[0]
         n_neurotypical = sum(test_y[test_sex_data[:, 0] == 1] == 0)[0]
 
+        y_pred = pred_test_y_bin.astype(int)
+        y_true = test_y.reshape(-1).astype(int)
+        a = (test_sex_data[:, 0]).astype(int)
+        TP = np.sum(np.logical_and(np.logical_and(y_pred == 1, y_true == 1), a==1))
+        FN = np.sum(np.logical_and(np.logical_and(y_pred == 0, y_true == 1), a==1))
+        sens = TP / (TP + FN)
+
+        TN = np.sum(np.logical_and(np.logical_and(y_pred == 0, y_true == 0), a==1))
+        FP = np.sum(np.logical_and(np.logical_and(y_pred == 1, y_true == 0), a==1))
+        spec = TN / (TN + FP)
+
     if population == 'female':
         auc_test = get_roc_auc_safe(
             test_y[test_sex_data[:, 1] == 1],
@@ -172,6 +194,17 @@ def get_auc_acc(y, pred, test, sex_data, population='all', abs_bias=True):
         n = sum(test_sex_data[:, 1] == 1)
         n_asd = sum(test_y[test_sex_data[:, 1] == 1] == 1)[0]
         n_neurotypical = sum(test_y[test_sex_data[:, 1] == 1] == 0)[0]
+        
+        y_pred = pred_test_y_bin.astype(int)
+        y_true = test_y.reshape(-1).astype(int)
+        a = (test_sex_data[:, 0]).astype(int)
+        TP = np.sum(np.logical_and(np.logical_and(y_pred == 1, y_true == 1), a==0))
+        FN = np.sum(np.logical_and(np.logical_and(y_pred == 0, y_true == 1), a==0))
+        sens = TP / (TP + FN)
+
+        TN = np.sum(np.logical_and(np.logical_and(y_pred == 0, y_true == 0), a==0))
+        FP = np.sum(np.logical_and(np.logical_and(y_pred == 1, y_true == 0), a==0))
+        spec = TN / (TN + FP)
 
     print('AUC', auc_test)
     print('acc', acc_test)
@@ -180,6 +213,8 @@ def get_auc_acc(y, pred, test, sex_data, population='all', abs_bias=True):
     print('n', n)
     print('n_asd', n_asd)
     print('n_neurotypical', n_neurotypical)
+    print('sensitivity', sens)
+    print('specificity', spec)
     scores_dict.update(
         {
             "auc": auc_test,
@@ -189,6 +224,8 @@ def get_auc_acc(y, pred, test, sex_data, population='all', abs_bias=True):
             "n": n,
             "n_asd": n_asd,
             "n_neurotypical": n_neurotypical,
+            "sensitivity": sens,
+            "specificity": spec
         }
     )
     return scores_dict
@@ -196,7 +233,7 @@ def get_auc_acc(y, pred, test, sex_data, population='all', abs_bias=True):
 
 def process_scores(scores, y, sex_data, abs_bias=True):
     metrics = ["auc", "acc", "acc_asd", "acc_neurotypical", "n", "n_asd",
-               "n_neurotypical"]
+               "n_neurotypical", "sensitivity", "specificity"]
     score_keys = [
                      (metric, sex) for metric in metrics for sex in
                      ["male", "female", "overall"]
