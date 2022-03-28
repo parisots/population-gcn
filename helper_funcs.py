@@ -275,9 +275,9 @@ def process_scores(scores, y, sex_data, abs_bias=True):
 
 def run_cross_validation(strat_indices, graph, features, y, y_data, params,
                          subject_IDs, skf, num_nodes, sex_data=None,
-                         stratify=False, save=False, baseline=False,
-                         transfer_learning=False, model_number=None,
-                         model_location=None):
+                         stratify=False, save = False, baseline = False,
+                         transfer_learning = False, model_number = None,
+                         model_location=None, group = None, random_seed = False):
     flags_dict = tf.flags.FLAGS._flags()
     keys_list = [keys for keys in flags_dict]
     for keys in keys_list:
@@ -302,8 +302,9 @@ def run_cross_validation(strat_indices, graph, features, y, y_data, params,
                         baseline=baseline,
                         transfer_learning=transfer_learning,
                         model_number=model_number,
-                        model_location=model_location
-
+                        model_location=model_location,
+                        group=group,
+                        random_seed=random_seed
                     ),
                     zip(strat_indices, fold_indices)
                 )
@@ -326,15 +327,13 @@ def run_cross_validation(strat_indices, graph, features, y, y_data, params,
                         baseline=baseline,
                         transfer_learning=transfer_learning,
                         model_number=model_number,
-                        model_location=model_location
+                        model_location=model_location,
+                        group=group,
+                        random_seed = random_seed
                     ),
-                    # [(train_ind, test_ind, test_ind) for train_ind,
-                    # test_ind in reversed(list(skf.split(np.zeros(
-                    # num_nodes), np.squeeze(y))))]
                     strat_indices
                 )
             )
 
-    # print(stratify)
-
     return scores
+

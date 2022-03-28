@@ -56,18 +56,19 @@ def get_train_test_masks(labels, idx_train, idx_val, idx_test):
 
 def run_training(adj, features, labels, idx_train, idx_val, idx_test,
                  params, sex_data=None, stratify=False, fold_index=None,
-                 model_number=None):
+                 model_number=None, random_seed=False):
     # Set random seed
-    # if fold_index != None: # HOLDOUT
-    #   seeds = np.arange(100,110)
-    #   seed_fold = seeds[fold_index]
-    #   random.seed(seed_fold)
-    #   np.random.seed(seed_fold)
-    #   tf.set_random_seed(seed_fold)
-    # else:
-    random.seed(params['seed'])
-    np.random.seed(params['seed'])
-    tf.set_random_seed(params['seed'])
+    if random_seed == True:
+        seeds = np.arange(100, 110)
+        seed_fold = seeds[fold_index]
+        random.seed(seed_fold)
+        np.random.seed(seed_fold)
+        tf.set_random_seed(seed_fold)
+        print(seed_fold)
+    else:
+        random.seed(params['seed'])
+        np.random.seed(params['seed'])
+        tf.set_random_seed(params['seed'])
 
     # Settings
     flags = tf.app.flags
@@ -214,12 +215,12 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
             print("Early stopping...")
             break
 
-    if fold_index != None:  # Saving models' parameters
-        saver = tf.train.Saver(model.vars)
-        saver.save(sess, 'TestSet_' + str(model_number) + '_model_' + str(
-            fold_index) + '/GCN_AllGraph_Ystrat_TrainMix_' + str(
-            fold_index) + '.ckpt')
-        print("Model was saved")
+    # if fold_index != None:  # Saving models' parameters
+    #   saver = tf.train.Saver(model.vars)
+    #   saver.save(sess, 'TestSet_' + str(model_number) + '_model_'+  str(
+    #   fold_index) +'/GCN_AllGraph_Ystrat_TrainMix_' + str(fold_index)+
+    #   '.ckpt')
+    #   print("Model was saved")
 
     print("Optimization Finished!")
 
@@ -241,12 +242,18 @@ def run_training(adj, features, labels, idx_train, idx_val, idx_test,
 def run_training_transfer(adj, features, labels, idx_train, idx_val, idx_test,
                           params, sex_data=None, stratify=False,
                           fold_index=None,
-                          model_location=None):
-    # tf.reset_default_graph()
-
-    random.seed(params['seed'])
-    np.random.seed(params['seed'])
-    tf.set_random_seed(params['seed'])
+                          model_location=None, model_number=None, group=None,
+                          random_seed=False):
+    if random_seed == True:
+        seeds = np.arange(100, 110)
+        seed_fold = seeds[fold_index]
+        random.seed(seed_fold)
+        np.random.seed(seed_fold)
+        tf.set_random_seed(seed_fold)
+    else:
+        random.seed(params['seed'])
+        np.random.seed(params['seed'])
+        tf.set_random_seed(params['seed'])
 
     # Settings
     flags = tf.app.flags
@@ -307,39 +314,11 @@ def run_training_transfer(adj, features, labels, idx_train, idx_val, idx_test,
     }
 
     # Create model
-    model_dict = {
-        str(model_location): model_func(placeholders, input_dim=features[2][1],
-                                        depth=FLAGS.depth, logging=True)}
-    model = model_dict[str(model_location)]
+    model = model_func(placeholders, input_dim=features[2][1],
+                       depth=FLAGS.depth, logging=True)
 
     # Initialize session
-    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
-                                            log_device_placement=True))
-    # Initialize variables
-    sess.run(tf.global_variables_initializer())
-
-    # Load trained variables
-    # print(model.vars)
-    # selecting correct variables
-    new_dict_keys = ("deep_gcn/graphconvolution_1_vars/weights_0:0",
-                     "deep_gcn/graphconvolution_1_vars/weights_1:0",
-                     "deep_gcn/graphconvolution_1_vars/weights_2:0",
-                     "deep_gcn/graphconvolution_1_vars/weights_3:0",
-                     "deep_gcn/graphconvolution_2_vars/weights_0:0",
-                     "deep_gcn/graphconvolution_2_vars/weights_1:0",
-                     "deep_gcn/graphconvolution_2_vars/weights_2:0",
-                     "deep_gcn/graphconvolution_2_vars/weights_3:0")
-    tmp_var = {key: model.vars[key] for key in new_dict_keys}
-    model.vars = tmp_var
-
-    print(model.vars)
-    new_saver = tf.train.Saver(model.vars)
-    print(model_location)
-    new_saver.restore(sess, tf.train.latest_checkpoint(model_location))
-    print('loaded')
-
-    new_saver = tf.train.Saver(model.vars)
-    new_saver.restore(sess, tf.train.latest_checkpoint(model_location))
+    sess = tf.Session()
 
     def get_stratified_data(y_train, train_idx, sex_labels):
         female_n = sex_labels[train_idx, 1].sum()
@@ -369,6 +348,9 @@ def run_training_transfer(adj, features, labels, idx_train, idx_val, idx_test,
         auc = sklearn.metrics.roc_auc_score(np.squeeze(lab), np.squeeze(pred))
         return outs_val[2], outs_val[0], outs_val[1], auc, (
                 time.time() - t_test)
+
+    # Init variables
+    sess.run(tf.global_variables_initializer())
 
     cost_val = []
 
@@ -418,9 +400,84 @@ def run_training_transfer(adj, features, labels, idx_train, idx_val, idx_test,
             print("Early stopping...")
             break
 
-    if fold_index != None:  # Saving models' parameters
-        new_saver.save(sess, 'female/GCN_fineTuned_' + str(fold_index),
-                       global_step=params['epochs'])  ###
+    print("Optimization Finished!")
+
+    # Testing
+    sess.run(tf.local_variables_initializer())
+    pred, test_cost, test_acc, test_auc, test_duration = evaluate(features,
+                                                                  support,
+                                                                  y_test,
+                                                                  test_mask,
+                                                                  placeholders)
+
+    print("Test set results:", "cost=", "{:.5f}".format(test_cost),
+          "accuracy=", "{:.5f}".format(test_acc),
+          "auc=", "{:.5f}".format(test_auc))
+
+    ###########################
+    ####### Fine-tuning #######
+    ###########################
+    cost_val = []
+
+    # Train model
+    if group == 'female':
+        fine_tune_mask = sex_data.T[1] == 1
+    else:
+        fine_tune_mask = sex_data.T[0] == 1
+
+    print(np.sum(train_mask))
+    train_mask = train_mask * fine_tune_mask
+    print(np.sum(train_mask))
+
+    params['epochs'] = 150  # first 30, 75
+    for epoch in range(params['epochs']):
+
+        t = time.time()
+        # Construct feed dictionary
+        if stratify:
+            train_mask_str = get_stratified_data(y_train, idx_train, sex_data)
+            feed_dict = construct_feed_dict(features, support, y_train,
+                                            train_mask_str, placeholders)
+        else:
+            feed_dict = construct_feed_dict(features, support, y_train,
+                                            train_mask, placeholders)
+
+        feed_dict.update({placeholders['dropout']: FLAGS.dropout,
+                          placeholders['phase_train']: True})
+
+        # Training step
+        outs = sess.run(
+            [model.opt_op, model.loss, model.accuracy, model.predict()],
+            feed_dict=feed_dict)
+        pred_train = outs[3]
+        pred_train = pred_train[np.squeeze(np.argwhere(train_mask == 1)), :]
+        labs = y_train
+        labs = labs[np.squeeze(np.argwhere(train_mask == 1)), :]
+        train_auc = sklearn.metrics.roc_auc_score(np.squeeze(labs),
+                                                  np.squeeze(pred_train))
+
+        # Validation
+        _, cost, acc, auc, duration = evaluate(features, support, y_val,
+                                               val_mask, placeholders)
+        cost_val.append(cost)
+
+        # Print results
+        print("Epoch:", '%04d' % (epoch + 1), "train_loss=",
+              "{:.5f}".format(outs[1]),
+              "train_acc=", "{:.5f}".format(outs[2]), "train_auc=",
+              "{:.5f}".format(train_auc), "val_loss=", "{:.5f}".format(cost),
+              "val_acc=", "{:.5f}".format(acc), "val_auc=",
+              "{:.5f}".format(auc), "time=",
+              "{:.5f}".format(time.time() - t + duration))
+
+        if epoch > FLAGS.early_stopping and cost_val[-1] > np.mean(
+                cost_val[-(FLAGS.early_stopping + 1):-1]):
+            print("Early stopping...")
+            break
+
+    # if fold_index != None:  # Saving models' parameters
+    #     new_saver.save(sess, 'female/GCN_fineTuned_' + str(fold_index),
+    #                global_step=params['epochs'])  ###
 
     print("Optimization Finished!")
 
@@ -436,5 +493,4 @@ def run_training_transfer(adj, features, labels, idx_train, idx_val, idx_test,
           "accuracy=", "{:.5f}".format(test_acc),
           "auc=", "{:.5f}".format(test_auc))
 
-    sess.close()
     return pred, test_acc, test_auc, pred_train

@@ -37,7 +37,8 @@ import train_GCN as Train
 def train_fold(train_ind, val_ind, test_ind, graph_feat, features, y, y_data,
                params, subject_IDs,
                sex_data=None, stratify=False, fold_index=None, baseline=False,
-               transfer_learning=False, model_number=None, model_location=None
+               transfer_learning=False, model_number=None, model_location=None,
+               group=None, random_seed=False
                ):
     """
         train_ind       : indices of the training samples
@@ -123,7 +124,8 @@ def train_fold(train_ind, val_ind, test_ind, graph_feat, features, y, y_data,
                     x_data).tolil(), y_data,
                 train_ind, val_ind,
                 test_ind, params, sex_data,
-                stratify, fold_index, model_location)
+                stratify, fold_index, model_location,
+                model_number, group, random_seed)
         else:
             pred, test_acc, test_auc, pred_train = Train.run_training(
                 final_graph,
@@ -131,7 +133,8 @@ def train_fold(train_ind, val_ind, test_ind, graph_feat, features, y, y_data,
                     x_data).tolil(), y_data,
                 train_ind, val_ind,
                 test_ind, params, sex_data,
-                stratify, fold_index, model_number)
+                stratify, fold_index, model_number,
+                random_seed)
 
         print(test_acc)
 
@@ -147,7 +150,7 @@ def train_fold_thread(
         indices_tuple, fold_index=None, *, graph_feat, features, y, y_data,
         params, subject_IDs,
         sex_data=None, stratify=False, baseline=False, transfer_learning=False,
-        model_number=None, model_location=None
+        model_number=None, model_location=None, group=None, random_seed=False
 ):
     """
         indices tuple   : tuple of indices of the training, test,
@@ -188,7 +191,9 @@ def train_fold_thread(
         baseline,
         transfer_learning,
         model_number,
-        model_location
+        model_location,
+        group,
+        random_seed
     )
     return pred, test_acc, test_auc, lin_acc, lin_auc, fold_size, test_ind, \
            pred_train
