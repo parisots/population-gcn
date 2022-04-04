@@ -30,7 +30,8 @@ from nilearn import connectome
 pipeline = 'cpac'
 
 # Input data variables
-root_folder = '/path/to/data/'
+# root_folder = '/users/tomdavies/Documents/Southampton/code/logml/population-gcn/data/'
+root_folder = '/content/drive/My Drive/LOGML21/logml/data/'
 data_folder = os.path.join(root_folder, 'ABIDE_pcp/cpac/filt_noglobal')
 phenotype = os.path.join(root_folder, 'ABIDE_pcp/Phenotypic_V1_0b_preprocessed1.csv')
 
@@ -55,9 +56,13 @@ def fetch_filenames(subject_IDs, file_type):
     # The list to be filled
     filenames = []
 
+    # os.chdir(data_folder)
     # Fill list with requested file paths
     for i in range(len(subject_IDs)):
+
+        # moved to line 60
         os.chdir(data_folder)  # os.path.join(data_folder, subject_IDs[i]))
+
         try:
             filenames.append(glob.glob('*' + subject_IDs[i] + filemapping[file_type])[0])
         except IndexError:
@@ -79,7 +84,8 @@ def get_timeseries(subject_list, atlas_name):
 
     timeseries = []
     for i in range(len(subject_list)):
-        subject_folder = os.path.join(data_folder, subject_list[i])
+        # subject_folder = os.path.join(data_folder, subject_list[i])
+        subject_folder = subject_list[i]
         ro_file = [f for f in os.listdir(subject_folder) if f.endswith('_rois_' + atlas_name + '.1D')]
         fl = os.path.join(subject_folder, ro_file[0])
         print("Reading timeseries file %s" %fl)

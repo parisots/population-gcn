@@ -1,0 +1,5 @@
+gcn.egg-info/PKG-INFO
+gcn.egg-info/SOURCES.txt
+gcn.egg-info/dependency_links.txt
+gcn.egg-info/requires.txt
+gcn.egg-info/top_level.txt
